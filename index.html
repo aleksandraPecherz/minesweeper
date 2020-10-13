@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minessweeper</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <main class="game">
+    <header class="header border border--convex">
+      <div class="mineCounter">888</div>
+      <button class="reset border border--concave">
+        <svg class="headerButton">
+          <use href="./assets/sprite.svg#neutral"></use>
+        </svg>
+      </button>
+      <div class="timeCounter">888</div>
+    </header>
+    <article class="gameBoard border border--convex">
+      <div class="cell border border--concave"></div>
+    </article>
+    <article class="gamePanel">
+      <header class="panel">
+        <h1 class="difficulty">Select difficulty</h1>
+      </header>
+      <section class="panelButtons border border--convex">
+        <button class="easy">EASY</button>
+        <button class="normal">NORMAL</button>
+        <button class="hard">HARD</button>
+      </section>
+    </article>
+    <article class="modal hide">
+      <div class="modalContent">
+        <h2 class="modalText">You won</h2>
+        <button class="modalButton">Play again</button>
+      </div>
+    </article>
+  </main>
+  <script type="module" src="./app/Game.js"></script>
+</body>
+
+</html>
