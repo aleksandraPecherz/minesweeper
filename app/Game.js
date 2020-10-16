@@ -1,40 +1,90 @@
+import {
+    Cell
+} from './Cell.js'
 class Game {
-
-    config = {
-        //information taken from wikipedia
+    level = {
         easy: {
             rows: 8,
-            columns: 9,
-            mines: 10
+            columns: 8,
+            mines: 10,
         },
         normal: {
             rows: 16,
             columns: 16,
-            mines: 40
+            mines: 40,
         },
-        hard: {
+        expert: {
             rows: 16,
             columns: 30,
-            mines: 99
-        }
-    }
+            mines: 99,
+        },
+    };
+
     constructor() {
         this.numberOfRows = 0;
         this.numberOfColumns = 0;
         this.numberOfMines = 0;
+        this.cells = [];
+        this.allCells = [];
+        this.currentCell = null;
     }
-    drawCells(rows = this.config.easy.rows, columns = this.config.easy.columns, mines = this.config.easy.mines) {
-        this.numberOfRows = rows;
-        this.numberOfColumns = columns;
-        this.numberOfMines = mines;
-        console.log(this.numberOfMines);
 
-    }
     initializeGame() {
-        this.drawCells()
+        this.renderBoard();
+        this.actionsOnCells();
+    }
+
+    renderBoard(row = this.level.easy.rows,
+        column = this.level.easy.columns,
+        mine = this.level.easy.mines) {
+        this.numberOfRows = row;
+        this.numberOfColumns = column;
+        this.numberOfMines = mine;
+        for (let i = 0; i < this.numberOfRows; i++) {
+            for (let j = 0; j < this.numberOfColumns; j++) {
+                this.cells.push(new Cell(i, j))
+            }
+        }
+    }
+
+    getCell() {
+        let rowNumber;
+        let columnNumber;
+        rowNumber = parseInt(event.target.getAttribute('data-x'), 10);
+        columnNumber = parseInt(event.target.getAttribute('data-y'), 10);
+        return this.cells[rowNumber + columnNumber * this.numberOfRows];
+    }
+    updateCell() {
+        if (this.currentCell.isReveal) {
+            event.target.classList.remove('border--concave');
+            event.target.classList.add('border--revealCell');
+        }
+        if (this.currentCell.isFlagged) {
+            let image = document.createElement("img")
+            image.setAttribute('src', './assets/flag.svg');
+            event.target.appendChild(image);
+        }
+    }
+    revealCurrentCell() {
+        this.currentCell = this.getCell();
+        this.currentCell.revealCell();
+        this.updateCell();
+    }
+    flagCurrentCell() {
+        this.currentCell = this.getCell();
+        console.log(this.currentCell);
+
+        this.currentCell.addFlag();
+        this.updateCell();
+    }
+    actionsOnCells() {
+        this.cells.forEach(cell => cell.createElement())
+        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('click', () => this.revealCurrentCell()));
+        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('contextmenu', () => this.flagCurrentCell()))
     }
 }
 window.onload = function () {
     const game = new Game();
+
     game.initializeGame();
-}
+};
