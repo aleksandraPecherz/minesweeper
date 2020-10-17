@@ -50,8 +50,9 @@ class Game {
     getCell() {
         let rowNumber;
         let columnNumber;
-        rowNumber = parseInt(event.target.getAttribute('data-x'), 10);
-        columnNumber = parseInt(event.target.getAttribute('data-y'), 10);
+        const element = event.target.localName !== "img" ? event.target : event.target.parentElement;
+        rowNumber = parseInt(element.getAttribute('data-x'), 10);
+        columnNumber = parseInt(element.getAttribute('data-y'), 10);
         return this.cells[rowNumber + columnNumber * this.numberOfRows];
     }
     updateCell() {
@@ -59,7 +60,7 @@ class Game {
             event.target.classList.remove('border--concave');
             event.target.classList.add('border--revealCell');
         }
-        if (this.currentCell.isFlagged) {
+        if (this.currentCell.isFlagged && !(event.target.hasChildNodes())) {
             let image = document.createElement("img")
             image.setAttribute('src', './assets/flag.svg');
             event.target.appendChild(image);
@@ -72,10 +73,11 @@ class Game {
     }
     flagCurrentCell() {
         this.currentCell = this.getCell();
-        console.log(this.currentCell);
-
-        this.currentCell.addFlag();
-        this.updateCell();
+        this.currentCell.toggleFlag();
+        if (!(this.currentCell.isReveal)) {
+            if (event.target.localName === "img") event.target.remove();
+            else this.updateCell();
+        }
     }
     actionsOnCells() {
         this.cells.forEach(cell => cell.createElement())

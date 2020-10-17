@@ -84,9 +84,14 @@ body{
   flex-wrap: wrap;
 }
 .cell{
+  position: relative;
   width:40px;
   height: 40px;
   cursor: pointer;
+}
+img{
+  position: absolute;
+  width: 30px;
 }
 .modal{
   position: fixed;

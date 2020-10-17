@@ -19,8 +19,8 @@ export class Cell {
         element.dataset.y = `${this.y}`
         this.board.appendChild(element);
     }
-    addFlag() {
-        this.isFlagged = !(this.isFlagged)
+    toggleFlag() {
+        if (!(this.isReveal)) this.isFlagged = !(this.isFlagged);
     }
 
     revealCell() {
