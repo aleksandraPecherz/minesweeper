@@ -28,5 +28,8 @@ export class Cell {
 
     }
 
-    addMine() {}
+    addMine() {
+        this.isMine=true;  
+    }
+
 }

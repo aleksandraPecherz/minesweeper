@@ -25,12 +25,13 @@ class Game {
         this.numberOfColumns = 0;
         this.numberOfMines = 0;
         this.cells = [];
-        this.allCells = [];
+        this.cellsWithMines = [];
         this.currentCell = null;
     }
 
     initializeGame() {
         this.renderBoard();
+        this.addMines();   
         this.actionsOnCells();
     }
 
@@ -46,7 +47,30 @@ class Game {
             }
         }
     }
-
+    addMines= (mines = this.numberOfMines) => { 
+        while (mines>0){       
+            let column = Math.round(Math.random()*(this.numberOfColumns-1));
+            let row = Math.round(Math.random()*(this.numberOfRows-1));
+            let currentCell = this.cells.filter(cell=> (cell.x===row && cell.y===column && !(cell.isMine)));
+            if (currentCell.length>0){
+                this.cellsWithMines.push(currentCell[0]);
+                currentCell[0].addMine();
+                mines--;
+            }
+        } 
+    }
+    endCurrentGame = () => {
+        if (this.currentCell.isMine){
+            console.log(this.cellsWithMines);
+            
+            this.cellsWithMines.forEach(cell => {
+                let image = document.createElement("img")
+                image.setAttribute('src', './assets/bomb.svg');
+                let bomb = document.querySelector(cell.selector).appendChild(image);
+                bomb.classList.add("bomb")
+            })
+        }
+    }
     getCell() {
         let rowNumber;
         let columnNumber;
@@ -66,12 +90,14 @@ class Game {
             event.target.appendChild(image);
         }
     }
-    revealCurrentCell() {
+    handleRevealCell() {
         this.currentCell = this.getCell();
         this.currentCell.revealCell();
-        this.updateCell();
+        console.log(this.currentCell);
+        
+        (this.currentCell.isMine) ? this.endCurrentGame() : this.updateCell();
     }
-    flagCurrentCell() {
+    handleFlagCell() {
         this.currentCell = this.getCell();
         this.currentCell.toggleFlag();
         if (!(this.currentCell.isReveal)) {
@@ -81,12 +107,11 @@ class Game {
     }
     actionsOnCells() {
         this.cells.forEach(cell => cell.createElement())
-        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('click', () => this.revealCurrentCell()));
-        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('contextmenu', () => this.flagCurrentCell()))
+        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('click', () => this.handleRevealCell()));
+        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('contextmenu', () => this.handleFlagCell()))
     }
 }
 window.onload = function () {
     const game = new Game();
-
     game.initializeGame();
 };

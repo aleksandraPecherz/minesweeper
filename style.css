@@ -6,29 +6,29 @@
   box-sizing: inherit;
 }
 
-:root{
+:root {
   --main-color: #c0c0c0;
   --main-dark-color: #808080;
-  --information-color:red;
+  --information-color: red;
   --counter-color: black;
 }
-@font-face{
+@font-face {
   font-family: DIGITALDREAM;
-  src: url(../assets/DIGITALDREAM.ttf)
+  src: url(../assets/DIGITALDREAM.ttf);
 }
-*{
+* {
   margin: 0px;
   padding: 0px;
   box-sizing: inherit;
 }
 
-body{
+body {
   font-family: Arial, Helvetica, sans-serif;
   box-sizing: border-box;
   font-size: 62.5%;
 }
 
-.game{
+.game {
   background-color: var(--main-color);
   padding: 15px;
   max-width: 356px;
@@ -36,64 +36,69 @@ body{
   margin-right: auto;
 }
 
-.header{
+.header {
   display: flex;
   justify-content: space-between;
   padding: 8px;
 }
 .mineCounter,
-.timeCounter{
-  background-color: var(--counter-color) ;
+.timeCounter {
+  background-color: var(--counter-color);
   color: var(--information-color);
-  font-family: 'DIGITALDREAM';
+  font-family: "DIGITALDREAM";
   font-size: 32px;
   min-width: 80px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
-.reset{
+.reset {
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: var(--main-color);
   outline: none;
 }
-.headerButton{
+.headerButton {
   width: 48px;
   height: 48px;
   cursor: pointer;
 }
 
-.gamePanel{
+.gamePanel {
   text-align: center;
   font-size: 20px;
 }
-.panelButtons{
+.panelButtons {
   display: flex;
 }
-.panelButtons button{
+.panelButtons button {
   flex: 1;
-  padding-top: 25px ;
+  padding-top: 25px;
   padding-bottom: 25px;
   cursor: pointer;
   font-size: 25px;
 }
-.gameBoard{
+.gameBoard {
   display: flex;
   flex-wrap: wrap;
 }
-.cell{
+.cell {
   position: relative;
-  width:40px;
+  width: 40px;
   height: 40px;
   cursor: pointer;
 }
-img{
-  position: absolute;
+img {
+  display: block;
+  margin: auto;
   width: 30px;
 }
-.modal{
+.bomb {
+  margin-top: 5px;
+  width: 35px;
+}
+.modal {
   position: fixed;
   z-index: -1;
   top: 0;
@@ -103,9 +108,9 @@ img{
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0,0,0,0.8)
+  background-color: rgba(0, 0, 0, 0.8);
 }
-.modalContent{
+.modalContent {
   width: 50vw;
   height: 50vh;
   background-color: white;
@@ -114,11 +119,11 @@ img{
   align-items: center;
   justify-content: space-around;
 }
-.modalText{
+.modalText {
   text-align: center;
   font-size: 50px;
 }
-.modalButton{
+.modalButton {
   cursor: pointer;
   background-color: transparent;
   color: var(--counter-color);
@@ -126,33 +131,33 @@ img{
   padding: 10px 20px;
   font-size: 25px;
   outline: none;
-  transition: background-color .1s ease-in, color .1s ease-in, border-color .1s ease-in;
+  transition: background-color 0.1s ease-in, color 0.1s ease-in,
+    border-color 0.1s ease-in;
 }
 
-.modalButton:hover{
+.modalButton:hover {
   background-color: black;
-  color:white;
-  border-color: black 
+  color: white;
+  border-color: black;
 }
-.border{
+.border {
   border: 3px solid;
 }
-.border--convex{
+.border--convex {
   border-top-color: var(--main-dark-color);
   border-right-color: white;
   border-bottom-color: white;
   border-left-color: var(--main-dark-color);
 }
-.border--concave{
-  border-top-color:  white;
+.border--concave {
+  border-top-color: white;
   border-right-color: var(--main-dark-color);
   border-bottom-color: var(--main-dark-color);
-  border-left-color:  white;
+  border-left-color: white;
 }
-.border--revealCell{
+.border--revealCell {
   border-color: var(--main-color);
 }
-.hide{
+.hide {
   opacity: 0;
 }
-
