@@ -24,12 +24,23 @@ export class Cell {
     }
 
     revealCell() {
-        this.isReveal = true;
-
+        if (!(this.isReveal)) {
+            this.isReveal = true;
+            this.addValue();
+        }
     }
 
     addMine() {
-        this.isMine=true;  
+        this.isMine = true;
+    }
+    addValue() {
+        if (this.value !== 0) {
+            let element = document.createElement('p');
+            element.innerHTML = this.value;
+            element.classList.add('mine-value')
+            element.classList.add(`mine-${this.value}`)
+            document.querySelector(this.selector).appendChild(element)
+        }
     }
 
 }
