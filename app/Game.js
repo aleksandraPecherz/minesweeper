@@ -1,6 +1,13 @@
 import {
     Cell
 } from './Cell.js'
+import {
+    Counter
+} from './Counter.js'
+import {
+    Timer
+} from './Timer.js'
+
 class Game {
     level = {
         easy: {
@@ -19,7 +26,8 @@ class Game {
             mines: 99,
         },
     };
-
+    Counter = new Counter();
+    Timer = new Timer();
     constructor() {
         this.numberOfRows = 0;
         this.numberOfColumns = 0;
@@ -29,24 +37,32 @@ class Game {
         this.cellsWithMines = [];
         this.currentCell = null;
         this.cellsToReveal = [];
+        this.isFistGame = true;
     }
 
-    initializeGame() {
-        this.setLevel();
+    startGame(row = this.level.easy.rows,
+        column = this.level.easy.columns,
+        mine = this.level.normal.mines) {
+        this.numberOfRows = row;
+        this.numberOfColumns = column;
+        this.numberOfMines = mine;
+        if (!this.isFistGame) this.restartData()
+        this.Counter.startCounter(this.numberOfMines);
+        this.setStylesOfBoard();
         this.renderBoard();
         this.allCells = this.cells.flat();
         this.allCells.forEach(cell => cell.createElement());
         this.addMines();
         this.getAllCellsToReveal();
         this.addValuesToCells();
-        this.actionsOnCells();
+        this.addButtonsEventListeners();
     }
-    setLevel(row = this.level.normal.rows,
-        column = this.level.normal.columns,
-        mine = this.level.normal.mines) {
-        this.numberOfRows = row;
-        this.numberOfColumns = column;
-        this.numberOfMines = mine;
+    restartData() {
+        this.cells = [];
+        this.allCells = [];
+        this.cellsWithMines = [];
+        this.currentCell = null;
+        this.cellsToReveal = [];
     }
     getAllCellsToReveal() {
         this.allCells.forEach(
@@ -56,16 +72,25 @@ class Game {
                 }
             })
     }
+    setStylesOfBoard() {
+        const elem = document.querySelector(":root");
+        elem.style.setProperty(
+            '--cells-in-row',
+            this.numberOfRows);
+    }
     renderBoard = () => {
-        for (let row = 0; row < this.numberOfRows; row++) {
-            this.cells[row] = [];
-            for (let column = 0; column < this.numberOfColumns; column++) {
-                this.cells[row].push(new Cell(column, row))
+        let board = document.querySelector(".gameBoard");
+        while (board.firstChild) {
+            board.removeChild(board.lastChild);
+        }
+        for (let column = 0; column < this.numberOfColumns; column++) {
+            this.cells[column] = [];
+            for (let row = 0; row < this.numberOfRows; row++) {
+                this.cells[column].push(new Cell(row, column))
             }
         }
     }
     AddValueToCell(x, y) {
-        console.log(x + "  +  " + y);
         let cellToCheck = this.cells[y][x];
         if (!(cellToCheck.isMine)) {
             cellToCheck.value += 1
@@ -73,9 +98,9 @@ class Game {
     }
     mainConditions(cell, x, y, value, action = "addValue") {
         if ((cell.x > 0 && value === "left") ||
-            (cell.x < this.numberOfColumns - 1 && value === "right") ||
+            (cell.x < this.numberOfRows - 1 && value === "right") ||
             (cell.y > 0 && value === "top") ||
-            (cell.y < this.numberOfRows - 1 && value === "bottom")) {
+            (cell.y < this.numberOfColumns - 1 && value === "bottom")) {
             if (action === "addValue") this.AddValueToCell(x, y)
             else {
                 if (!this.cells[y][x].isReveal)
@@ -85,9 +110,9 @@ class Game {
     }
     sideConditions(cell, x, y, value, action = "addValue") {
         if ((cell.x > 0 && cell.y > 0 && value === "left-top") ||
-            (cell.x > 0 && cell.y < this.numberOfRows - 1 && value === "left-bottom") ||
-            (cell.x < this.numberOfColumns - 1 && cell.y > 0 && value === "right-top") ||
-            (cell.x < this.numberOfColumns - 1 && cell.y < this.numberOfRows - 1 && value === "right-bottom"))
+            (cell.x > 0 && cell.y < this.numberOfColumns - 1 && value === "left-bottom") ||
+            (cell.x < this.numberOfRows - 1 && cell.y > 0 && value === "right-top") ||
+            (cell.x < this.numberOfRows - 1 && cell.y < this.numberOfColumns - 1 && value === "right-bottom"))
             if (action === "addValue") this.AddValueToCell(x, y)
         else {
             if (!this.cells[y][x].isReveal)
@@ -114,12 +139,12 @@ class Game {
         while (mines > 0) {
             let column = Math.round(Math.random() * (this.numberOfColumns - 1));
             let row = Math.round(Math.random() * (this.numberOfRows - 1));
-            console.log(column + " + " +
-                row);
-            if (!(this.cells[row][column].isMine)) {
-                this.cellsWithMines.push(this.cells[row][column]);
-                this.cells[row][column].addMine();
-                this.cells[row][column].value = -1
+            //console.log(column + " + " +
+            // row);
+            if (!(this.cells[column][row].isMine)) {
+                this.cellsWithMines.push(this.cells[column][row]);
+                this.cells[column][row].addMine();
+                this.cells[column][row].value = -1
                 mines--;
             }
         }
@@ -144,13 +169,13 @@ class Game {
 
         return this.cells[columnNumber][rowNumber];
     }
-    updateCell(cell) {
-        console.log(cell);
-
+    updateCellAfterReveal(cell) {
         if (cell.isReveal) {
             document.querySelector(cell.selector).classList.remove('border--concave');
             document.querySelector(cell.selector).classList.add('border--revealCell');
         }
+    }
+    updateCellAfterFlag() {
         if (this.currentCell.isFlagged && !(event.target.hasChildNodes())) {
             let image = document.createElement("img")
             image.setAttribute('src', './assets/flag.svg');
@@ -167,31 +192,22 @@ class Game {
         this.revealCurrentCell(cellToCheck)
         if (cellToCheck.value === 0) {
             this.neibghorCells(cellToCheck, "revealCell")
-
-
         }
 
     }
     checkNeighborCells(cell) {
         if (cell.value === 0) {
-            setTimeout(() => {
-                this.neibghorCells(cell, "revealCell")
-            }, 1)
+            this.neibghorCells(cell, "revealCell")
         }
         this.revealCurrentCell(cell)
     }
 
-    handleRevealCell() {
+    handleRevealCellAndStartTimer() {
+        if (!this.Timer.isStarted) this.Timer.startTimer()
         this.currentCell = this.getCell();
         if (this.currentCell.isMine) this.endCurrentGame()
         else {
             this.checkNeighborCells(this.currentCell);
-            // console.log(this.cellsToReveal);
-            //this.cellsToReveal.forEach(cell => {
-            //    cell.revealCell();
-            //    this.updateCell(cell);
-            //})
-
         }
     }
     handleFlagCell() {
@@ -199,15 +215,34 @@ class Game {
         this.currentCell.toggleFlag();
         if (!(this.currentCell.isReveal)) {
             if (event.target.localName === "img") event.target.remove();
-            else this.updateCell();
+            else this.updateCellAfterFlag();
         }
     }
-    actionsOnCells() {
-        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('click', () => this.handleRevealCell()));
+    addButtonsEventListeners() {
+        document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('click', () => this.handleRevealCellAndStartTimer()));
         document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('contextmenu', () => this.handleFlagCell()))
+
+        document.querySelectorAll(".easy").forEach(cell => cell.addEventListener('click', () => {
+            this.isFistGame = false;
+            this.startGame(this.level.easy.rows,
+                this.level.easy.columns,
+                this.level.easy.mines)
+        }))
+        document.querySelectorAll(".normal").forEach(cell => cell.addEventListener('click', () => {
+            this.isFistGame = false;
+            this.startGame(this.level.normal.rows,
+                this.level.normal.columns,
+                this.level.normal.mines)
+        }))
+        document.querySelectorAll(".expert").forEach(cell => cell.addEventListener('click', () => {
+            this.isFistGame = false;
+            this.startGame(this.level.expert.rows,
+                this.level.expert.columns,
+                this.level.expert.mines)
+        }))
     }
 }
 window.onload = function () {
     const game = new Game();
-    game.initializeGame();
+    game.startGame();
 };
