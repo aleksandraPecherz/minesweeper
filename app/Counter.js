@@ -9,5 +9,11 @@ export class Counter {
     init() {
         document.querySelector(".mineCounter").innerHTML = this.numberOfMines;
     }
-    updateNumberOfMines() {}
+    updateNumberOfMines(cell) {
+        if (cell.isFlagged) this.numberOfMines--
+        else if (!cell.isReveal) {
+            this.numberOfMines++
+        }
+        this.init();
+    }
 }

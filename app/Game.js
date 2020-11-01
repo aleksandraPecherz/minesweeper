@@ -7,7 +7,9 @@ import {
 import {
     Timer
 } from './Timer.js'
-
+import {
+    Menu
+} from './Menu.js'
 class Game {
     level = {
         easy: {
@@ -28,10 +30,12 @@ class Game {
     };
     Counter = new Counter();
     Timer = new Timer();
+    Menu = new Menu();
     constructor() {
         this.numberOfRows = 0;
         this.numberOfColumns = 0;
         this.numberOfMines = 0;
+        this.numberOfRevealCells = 0;
         this.cells = [];
         this.allCells = [];
         this.cellsWithMines = [];
@@ -40,18 +44,21 @@ class Game {
         this.isFistGame = true;
     }
 
-    startGame(row = this.level.easy.rows,
+    initializeGame(row = this.level.easy.rows,
         column = this.level.easy.columns,
-        mine = this.level.normal.mines) {
+        mine = this.level.easy.mines) {
         this.numberOfRows = row;
         this.numberOfColumns = column;
         this.numberOfMines = mine;
-        if (!this.isFistGame) this.restartData()
+        if (!this.isFistGame) this.restartData();
         this.Counter.startCounter(this.numberOfMines);
+        this.startGame()
+        console.log(this.numberOfRevealCells);
+
+    }
+    startGame() {
         this.setStylesOfBoard();
         this.renderBoard();
-        this.allCells = this.cells.flat();
-        this.allCells.forEach(cell => cell.createElement());
         this.addMines();
         this.getAllCellsToReveal();
         this.addValuesToCells();
@@ -63,6 +70,12 @@ class Game {
         this.cellsWithMines = [];
         this.currentCell = null;
         this.cellsToReveal = [];
+        this.Timer.restartTimer();
+        this.numberOfRevealCells = 0;
+    }
+    newGame() {
+        this.Menu.startAgain();
+        this.initializeGame();
     }
     getAllCellsToReveal() {
         this.allCells.forEach(
@@ -89,6 +102,8 @@ class Game {
                 this.cells[column].push(new Cell(row, column))
             }
         }
+        this.allCells = this.cells.flat();
+        this.allCells.forEach(cell => cell.createElement());
     }
     AddValueToCell(x, y) {
         let cellToCheck = this.cells[y][x];
@@ -133,14 +148,11 @@ class Game {
         this.cellsWithMines.forEach(cell => {
             this.neibghorCells(cell)
         })
-        //this.allCells.forEach(cell => cell.addValue())
     }
     addMines = (mines = this.numberOfMines) => {
         while (mines > 0) {
             let column = Math.round(Math.random() * (this.numberOfColumns - 1));
             let row = Math.round(Math.random() * (this.numberOfRows - 1));
-            //console.log(column + " + " +
-            // row);
             if (!(this.cells[column][row].isMine)) {
                 this.cellsWithMines.push(this.cells[column][row]);
                 this.cells[column][row].addMine();
@@ -149,16 +161,30 @@ class Game {
             }
         }
     }
-
-    endCurrentGame = () => {
-        if (this.currentCell.isMine) {
-            this.cellsWithMines.forEach(cell => {
+    showMines() {
+        this.cellsWithMines.forEach(cell => {
+            if (!cell.isFlagged) {
                 let image = document.createElement("img")
                 image.setAttribute('src', './assets/bomb.svg');
                 let bomb = document.querySelector(cell.selector).appendChild(image);
                 bomb.classList.add("bomb")
-            })
-        }
+            }
+        })
+    }
+    checkGameResult() {
+        const allCellsToReveal = this.numberOfColumns * this.numberOfRows - this.numberOfMines;
+        if (this.numberOfRevealCells === allCellsToReveal) {
+            this.Menu.setWin();
+            this.endCurrentGame();
+        } else if (this.currentCell.isMine) this.Menu.setLoss();
+    }
+    endCurrentGame = () => {
+        this.Timer.stopTimer();
+        this.Menu.endGame();
+        this.showMines();
+        this.Menu.changeMenuContent();
+        this.isFistGame = false;
+
     }
     getCell() {
         let rowNumber;
@@ -169,12 +195,6 @@ class Game {
 
         return this.cells[columnNumber][rowNumber];
     }
-    updateCellAfterReveal(cell) {
-        if (cell.isReveal) {
-            document.querySelector(cell.selector).classList.remove('border--concave');
-            document.querySelector(cell.selector).classList.add('border--revealCell');
-        }
-    }
     updateCellAfterFlag() {
         if (this.currentCell.isFlagged && !(event.target.hasChildNodes())) {
             let image = document.createElement("img")
@@ -183,9 +203,13 @@ class Game {
         }
     }
     revealCurrentCell(cell) {
-        cell.revealCell()
-        document.querySelector(cell.selector).classList.remove('border--concave');
-        document.querySelector(cell.selector).classList.add('border--revealCell');
+        if (!cell.isReveal) {
+            cell.revealCell()
+                ++this.numberOfRevealCells;
+            this.checkGameResult();
+            document.querySelector(cell.selector).classList.remove('border--concave');
+            document.querySelector(cell.selector).classList.add('border--revealCell');
+        }
     }
     releaveNeighbor(x, y) {
         let cellToCheck = this.cells[y][x];
@@ -205,18 +229,26 @@ class Game {
     handleRevealCellAndStartTimer() {
         if (!this.Timer.isStarted) this.Timer.startTimer()
         this.currentCell = this.getCell();
-        if (this.currentCell.isMine) this.endCurrentGame()
-        else {
-            this.checkNeighborCells(this.currentCell);
+        if (!this.currentCell.isFlagged) {
+            if (this.currentCell.isMine) {
+                this.checkGameResult();
+                this.endCurrentGame();
+            } else {
+                this.checkNeighborCells(this.currentCell);
+            }
         }
     }
     handleFlagCell() {
+
         this.currentCell = this.getCell();
-        this.currentCell.toggleFlag();
-        if (!(this.currentCell.isReveal)) {
-            if (event.target.localName === "img") event.target.remove();
-            else this.updateCellAfterFlag();
-        }
+        if (this.Counter.numberOfMines > 0 || this.currentCell.isFlagged) {
+            this.currentCell.toggleFlag();
+            this.Counter.updateNumberOfMines(this.currentCell);
+            if (!(this.currentCell.isReveal)) {
+                if (event.target.localName === "img") event.target.remove();
+                else this.updateCellAfterFlag();
+            }
+        } else alert("Maximum number of flags are reached")
     }
     addButtonsEventListeners() {
         document.querySelectorAll(".cell").forEach(cell => cell.addEventListener('click', () => this.handleRevealCellAndStartTimer()));
@@ -224,25 +256,26 @@ class Game {
 
         document.querySelectorAll(".easy").forEach(cell => cell.addEventListener('click', () => {
             this.isFistGame = false;
-            this.startGame(this.level.easy.rows,
+            this.initializeGame(this.level.easy.rows,
                 this.level.easy.columns,
                 this.level.easy.mines)
         }))
         document.querySelectorAll(".normal").forEach(cell => cell.addEventListener('click', () => {
             this.isFistGame = false;
-            this.startGame(this.level.normal.rows,
+            this.initializeGame(this.level.normal.rows,
                 this.level.normal.columns,
                 this.level.normal.mines)
         }))
         document.querySelectorAll(".expert").forEach(cell => cell.addEventListener('click', () => {
             this.isFistGame = false;
-            this.startGame(this.level.expert.rows,
+            this.initializeGame(this.level.expert.rows,
                 this.level.expert.columns,
                 this.level.expert.mines)
         }))
+        document.querySelector('.modalButton').addEventListener('click', () => this.newGame())
     }
 }
 window.onload = function () {
     const game = new Game();
-    game.startGame();
+    game.initializeGame();
 };

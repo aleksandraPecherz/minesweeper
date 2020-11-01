@@ -1,19 +1,32 @@
 export class Timer {
     constructor() {
-        this.timeFromBeginning = 0;
+        this.numberOfSeconds = 1;
         this.isStarted = false;
         this.interval = null;
+        this.maximumNumberOfSeconds = 999;
+    }
+    restartTimer() {
+        this.numberOfSeconds = 0;
     }
     startTimer() {
         this.interval = setInterval(() => this.updateTime(), 1000)
         this.isStarted = true;
     }
     init() {
-        document.querySelector(".timeCounter").innerHTML = this.timeFromBeginning;
+        document.querySelector(".timeCounter").innerHTML = this.numberOfSeconds;
     }
     updateTime() {
-        console.log(this.timeFromBeginning);
         this.init()
-        this.timeFromBeginning++;
+        this.numberOfSeconds = this.numberOfSeconds + 1;
+        if (this.numberOfSeconds === this.maximumNumberOfSeconds) this.stopTimer()
+    }
+    stopTimer() {
+        if (this.numberOfSeconds === this.maximumNumberOfSeconds) {
+            clearInterval(this.interval)
+            alert("Maximum time is reached")
+        } else {
+            clearInterval(this.interval)
+        }
+
     }
 }
