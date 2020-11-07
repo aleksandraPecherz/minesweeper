@@ -10,6 +10,9 @@ import {
 import {
     Menu
 } from './Menu.js'
+import {
+    EmoticonButton
+} from './EmoticonButton.js'
 class Game {
     level = {
         easy: {
@@ -31,6 +34,7 @@ class Game {
     Counter = new Counter();
     Timer = new Timer();
     Menu = new Menu();
+    Emoticon = new EmoticonButton();
     constructor() {
         this.numberOfRows = 0;
         this.numberOfColumns = 0;
@@ -72,6 +76,7 @@ class Game {
         this.cellsToReveal = [];
         this.Timer.restartTimer();
         this.numberOfRevealCells = 0;
+        this.Emoticon.changeEmoticon('neutral');
     }
     newGame() {
         this.Menu.startAgain();
@@ -184,6 +189,9 @@ class Game {
         this.showMines();
         this.Menu.changeMenuContent();
         this.isFistGame = false;
+        if (this.Menu.isWin)
+            this.Emoticon.changeEmoticon('positive');
+        else this.Emoticon.changeEmoticon('negative');
 
     }
     getCell() {

@@ -7,6 +7,8 @@ export class Timer {
     }
     restartTimer() {
         this.numberOfSeconds = 0;
+        this.init();
+        this.isStarted = false;
     }
     startTimer() {
         this.interval = setInterval(() => this.updateTime(), 1000)
